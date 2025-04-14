@@ -1,4 +1,4 @@
-## 📘 `README.md` — *Enhancing Visual Speaker Authentication Using Dynamic Lip Movement and Meta-Learning*  
+*Enhancing Visual Speaker Authentication Using Dynamic Lip Movement and Meta-Learning*  
 🗓️ Last Updated: 2025-04-14
 
 
