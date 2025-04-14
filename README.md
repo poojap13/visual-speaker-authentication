@@ -1,103 +1,173 @@
+## 📘 `README.md` — *Enhancing Visual Speaker Authentication Using Dynamic Lip Movement and Meta-Learning*  
+🗓️ Last Updated: 2025-04-14
 
-# Enhancing Visual Speaker Authentication Using Dynamic Lip Movement Analysis and Meta-Learning
-
-## Overview
-
-This project presents a visual speaker authentication (VSA) system that leverages dynamic lip movement features extracted through optical flow and a meta-learning-based few-shot learning framework to improve spoof resistance and reduce the amount of enrollment data required for new users. The goal is to enhance the security and practicality of speaker authentication systems, especially against DeepFake attacks.
-
-## Research Questions
-
-**RQ1:** Can few-shot learning approaches, specifically Model-Agnostic Meta-Learning (MAML), significantly reduce the user registration data requirements in visual speaker authentication systems compared to traditional CNN methods?
-
-**RQ2:** Can dynamically extracted visual features (optical flow of lip movements) effectively distinguish genuine speakers from sophisticated DeepFake spoofing attacks?
-
-## Methodology
-
-- **Dataset:** GRID corpus (downloaded from https://spandh.dcs.shef.ac.uk/gridcorpus/), consisting of audiovisual speech recordings from 34 speakers.
-- **Fake Video Generation:** Wav2Lip is used to create realistic DeepFake videos by altering the lip movements of the original speaker based on unrelated audio input.
-- **Preprocessing:** Lip regions are extracted using Dlib landmarks, and dense optical flow is applied using Farnebäck’s method to capture dynamic lip movement between video frames.
-- **Feature Representation:** Optical flow tensors of shape (75, 64, 64, 2) per video are generated to preserve spatial and temporal motion.
-- **Models:**
-  - **Baseline CNN:** Trained on real/fake videos for seen speakers using standard cross-entropy.
-  - **MAML-based 3D CNN:** Trained with few-shot tasks to enable rapid adaptation to new speakers with limited samples.
-- **Speaker Splits:**
-  - Training Speakers: s1–s22
-  - Validation Speakers: s23–s25
-  - Test Speakers: s26–s30
-
-## Project Structure
-
-- **notebooks/** – Jupyter notebooks for each major step (fake video generation, optical flow extraction, CNN and MAML training).
-- **src/** – Modular Python code:
-  - `fake_video_generator.py` – Wrapper for Wav2Lip
-  - `optical_flow.py` – Optical flow extraction functions
-  - `cnn_model.py`, `maml_model.py` – Model definitions
-  - `train_utils.py` – Training and evaluation functions
-- **data/** – Instructions for downloading and organizing the GRID dataset
-- **results/** – Plots, metrics, confusion matrices
-- **saved_models/** – Final trained models (.pth files under 100MB)
-- **README.md** – This project documentation
-- **requirements.txt** – Python package dependencies
-
-## How to Run
-
-1. **Download GRID Dataset**  
-   Open `notebooks/1_generate_fakes.ipynb` or `data/download_grid.ipynb`.  
-   Enter speaker range (e.g., 1–30) and whether to extract files.
-
-2. **Generate DeepFake Videos**  
-   Use Wav2Lip via the provided script to create fake videos with mismatched audio.
-
-3. **Extract Optical Flow**  
-   Run the notebook `2_optical_flow_extraction.ipynb` or use the function from `src/optical_flow.py`.
-
-4. **Train CNN Baseline**  
-   Run `3_cnn_baseline_training.ipynb` to train and evaluate the baseline model.
-
-5. **Train MAML Model**  
-   Run `4_maml_training.ipynb`. The model is trained using few-shot tasks and evaluated on disjoint speakers.
-
-## Results Summary
-
-| Model                 | AUC   | HTER   | Accuracy (Disjoint) |
-|----------------------|-------|--------|----------------------|
-| CNN (Seen Speakers)  | 0.9997| 0.23%  | 99.7%               |
-| CNN (Disjoint)       | 0.500 | 50.0%  | 50.0%               |
-| MAML (Validation)    | 0.990+| <1%    | 98.9%               |
-| MAML (Disjoint)      | 0.920 | 16.5%  | 68.6%               |
-
-## Hyperparameters (Optuna Tuned)
-
-- Dropout: 0.44
-- Inner loop learning rate (α): 0.015
-- Outer loop learning rate (β): 0.00098
-- Number of shots: 7
-- Epochs: 30
-- Tasks per episode: 100
-
-## Reproducibility Notes (Checklist Highlights)
-
-- Dataset preprocessing, splits, and feature extraction are fully described.
-- Source code includes training and evaluation scripts for both CNN and MAML models.
-- Optuna was used for hyperparameter optimization.
-- Evaluation metrics include Accuracy, AUC, Precision, Recall, F1-score, FAR, FRR, and HTER.
-- Models are tested on unseen speakers (s26–s30) to validate generalization.
-- All results are backed by saved visualizations and metrics in the `results/` directory.
-- Code is modularized and reusable, with clear function definitions and parameters.
-
-## Links
-
-- GitHub Repository: https://github.com/yourusername/visual-speaker-authentication  
-- Overleaf Report: https://www.overleaf.com/read/your-overleaf-link-here  
-
-## Author
-
-Pooja Pathare  
-MSc in Computer Science, Lakehead University  
-Supervised by Dr. Garima Bajwa
-
-## License
-
-This project is for academic, non-commercial research use only. Please cite appropriately if reused or referenced.
 
 ---
+
+### 🎯 Project Overview
+
+This project proposes a **Visual Speaker Authentication (VSA)** system that leverages **dynamic lip movements** for secure and spoof-resistant identity verification. It addresses challenges in conventional speaker authentication systems such as:
+- High registration effort
+- Susceptibility to DeepFake attacks
+- Poor generalization to unseen users
+
+We adopt a **few-shot meta-learning approach (MAML)** using optical flow inputs, enabling:
+- **Fast adaptation to new users with minimal samples**
+- **Strong spoof detection against AI-generated fakes**
+- **Evaluation on speaker-disjoint splits**
+
+---
+
+### ❓ Research Questions
+
+**RQ1:** Can few-shot learning (MAML) reduce speaker registration requirements compared to traditional CNN-based models?
+
+**RQ2:** Are dynamically extracted visual features (optical flow of lip movements) effective for detecting DeepFake spoofing?
+
+---
+
+### 🧪 Dataset
+
+- 📦 **GRID Corpus**: 34 speakers, frontal face videos with matching audio
+- 🎭 **Fake Generation**: Created using [Wav2Lip](https://github.com/Rudrabha/Wav2Lip), mixing real faces with mismatched audio to produce DeepFakes
+- 🌀 **Optical Flow Extraction**: Lip regions are isolated using Dlib and processed with Farneback's method to capture temporal motion
+
+---
+
+### 🗃️ Project Structure
+
+```
+visual-speaker-authentication/
+├── data/                       # Dataset instructions
+├── notebooks/                 # Jupyter notebooks (preprocessing, training, eval)
+├── results/                   # Metrics, confusion matrix, ROC curves
+├── saved_models/              # Trained model checkpoints (.pth)
+├── src/                       # Modular Python scripts
+├── main.py                    # End-to-end pipeline script
+├── requirements.txt           # Dependencies
+├── .gitignore                 # Ignore configs, models, cache
+└── README.md                  # This documentation
+```
+
+---
+
+### 📔 Notebooks
+
+| File                                       | Purpose                                                                 |
+|--------------------------------------------|-------------------------------------------------------------------------|
+| `Fakedataset_generation.ipynb`             | Generate DeepFake videos using Wav2Lip                                 |
+| `OpticalFlowFakeSpeakers.ipynb`            | Extract lip optical flow features                                      |
+| `VSA_FINALMAML.ipynb`                      | Full MAML training and testing                                         |
+| `VSA_hyperparametertunning&20tasks.ipynb`  | Optuna tuning + reduced-task generalization setup                     |
+
+---
+
+### 🧠 Core Scripts (in `src/`)
+
+| Script                 | Description                                                             |
+|------------------------|-------------------------------------------------------------------------|
+| `generate_fakes.py`    | Batch generates fake videos using Wav2Lip for all speakers              |
+| `extract_optical_flow.py` | Extracts lip optical flow from real/fake videos (saves `.npy` files) |
+| `train_maml.py`        | Final MAML model training with Optuna-best hyperparameters              |
+| `tune_optuna.py`       | Hyperparameter tuning (dropout, inner_lr, meta_lr, shots) using Optuna |
+
+---
+
+### 🔧 How to Run
+
+#### 📦 1. Clone and Install
+```bash
+git clone https://github.com/poojap13/visual-speaker-authentication.git
+cd visual-speaker-authentication
+pip install -r requirements.txt
+```
+
+#### 📥 2. Download GRID Dataset
+```bash
+cd data
+# See: DownloadGridDataset.ipynb or README.md for script
+```
+
+#### 🧪 3. Generate Fake Videos
+```bash
+python src/generate_fakes.py
+```
+
+#### 🎞️ 4. Extract Optical Flow
+```bash
+python src/extract_optical_flow.py
+```
+
+#### 🧠 5. Tune Hyperparameters (Optional)
+```bash
+python src/tune_optuna.py
+```
+
+#### 🧬 6. Train Final MAML Model
+```bash
+python src/train_maml.py
+```
+
+#### ✅ 7. Full Pipeline
+```bash
+python main.py
+```
+
+---
+
+### 🧾 Results Summary (on speaker-disjoint setup)
+
+| Model           | Accuracy | AUC   | EER   | HTER  | F1    |
+|----------------|----------|-------|-------|-------|-------|
+| MAML (Final)   | 99.67%   | 0.997 | 0.000 | 0.003 | 0.996 |
+
+📍 See: `results/` folder for confusion matrix, ROC curves, and logs
+
+---
+
+### 🧬 Final Hyperparameters (Tuned via Optuna)
+
+```yaml
+dropout:       0.3766
+inner_lr:      0.0204
+meta_lr:       0.0006
+shots:         3
+epochs:        15
+tasks/epoch:   50
+```
+
+---
+
+### 📌 Reproducibility Checklist (v2.0 ✅)
+
+- ✅ Dataset statistics, splits, preprocessing steps
+- ✅ Hyperparameter tuning details (via Optuna)
+- ✅ All training & evaluation code provided
+- ✅ Pre-trained model: `saved_models/best_model3.pth`
+- ✅ Confusion matrix, ROC, metrics (`results/`)
+- ✅ Training logs and curves included
+
+---
+
+### 🔗 Links
+
+- 📄 Overleaf Report: [Overleaf Final Report](https://www.overleaf.com/project/67e76f407a248c43d6fd131d)
+- 📦 Wav2Lip GitHub: [https://github.com/Rudrabha/Wav2Lip](https://github.com/Rudrabha/Wav2Lip)
+- 🗃 GRID Corpus: [https://spandh.dcs.shef.ac.uk/gridcorpus/](https://spandh.dcs.shef.ac.uk/gridcorpus/)
+- 🔗 GitHub Repo: [https://github.com/poojap13/visual-speaker-authentication](https://github.com/poojap13/visual-speaker-authentication)
+
+---
+
+### 👩‍💻 Author
+
+**Pooja Pathare**  
+MSc in Computer Science, Lakehead University  
+Supervisor: Dr. Garima Bajwa
+
+---
+
+### 📜 License
+
+This project is intended for **academic research and non-commercial use only**.  
+Please cite the original repositories (Wav2Lip, Learn2Learn, GRID Corpus) if used.
+
